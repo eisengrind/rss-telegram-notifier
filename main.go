@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"log"
-	"strings"
 
 	"github.com/playnet-public/flagenv"
 	"gopkg.in/telegram-bot-api.v4"
@@ -44,12 +43,20 @@ func main() {
 	for update := range updates {
 		var b bytes.Buffer
 
+		categories := ""
+		for k, v := range update.Categories {
+			if k > 0 {
+				categories = " / " + categories
+			}
+			categories = v + categories
+		}
+
 		if err := parsedTemplateMessage.Execute(&b, &message{
 			Title:       update.Title,
 			Description: update.Description,
 			Date:        update.PublishedParsed.Format("02.01.2006 @ 15:04"),
 			Link:        update.Link,
-			Categories:  strings.Join(update.Categories, " / "),
+			Categories:  categories,
 		}); err != nil {
 			log.Fatal(err.Error())
 		}
