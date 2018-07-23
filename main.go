@@ -24,6 +24,8 @@ type message struct {
 }
 
 func main() {
+	flagenv.Parse()
+
 	if *chatID == 0 {
 		log.Fatal("you have to enter an chat id")
 	}
