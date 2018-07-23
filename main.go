@@ -12,6 +12,7 @@ var (
 	tgAPIKey   = flagenv.String("tg-api-key", "", "This is your telegram bot-api-token")
 	chatID     = flagenv.Int("chat-id", 0, "The chat to use.")
 	rssFeedURL = flagenv.String("rss-feed-url", "", "The RSS-feed to use for updates")
+	guidsFile  = flagenv.String("guids-file", "", "The path to the guids file")
 )
 
 type message struct {
@@ -38,7 +39,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	updator := NewRSSFeed(*rssFeedURL, "guids.json")
+	updator := NewRSSFeed(*rssFeedURL, *guidsFile)
 	updates := updator.GetUpdateChan()
 
 	for update := range updates {
