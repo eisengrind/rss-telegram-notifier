@@ -17,7 +17,7 @@ var (
 	parsedTemplateMessage *template.Template
 	templateMessage       = `
 <b>{{.Title}}</b>
-<i>{{.Date}} in {{.Categories}}</i>
+<i>{{.Date}} from {{.Author}}</i>
 
 {{.Description}}
 

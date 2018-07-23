@@ -19,7 +19,7 @@ type message struct {
 	Description string
 	Date        string
 	Link        string
-	Categories  string
+	Author      string
 }
 
 func main() {
@@ -38,25 +38,18 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	updates := GetUpdatesChan(*rssFeedURL)
+	updator := NewRSSFeed(*rssFeedURL, "guids.json")
+	updates := updator.GetUpdateChan()
 
 	for update := range updates {
 		var b bytes.Buffer
-
-		categories := ""
-		for k, v := range update.Categories {
-			if k > 0 {
-				categories = " / " + categories
-			}
-			categories = v + categories
-		}
 
 		if err := parsedTemplateMessage.Execute(&b, &message{
 			Title:       update.Title,
 			Description: update.Description,
 			Date:        update.PublishedParsed.Format("02.01.2006 @ 15:04"),
 			Link:        update.Link,
-			Categories:  categories,
+			Author:      update.Author.Name,
 		}); err != nil {
 			log.Fatal(err.Error())
 		}
