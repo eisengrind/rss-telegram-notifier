@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"log"
+	"time"
 
 	"github.com/playnet-public/flagenv"
 	"gopkg.in/telegram-bot-api.v4"
@@ -13,6 +14,7 @@ var (
 	chatID     = flagenv.Int("chat-id", 0, "The chat to use.")
 	rssFeedURL = flagenv.String("rss-feed-url", "", "The RSS-feed to use for updates")
 	guidsFile  = flagenv.String("guids-file", "", "The path to the guids file")
+	timeout    = flagenv.Int("timeout", 10, "The timeout within a rss feed is gathered (in seconds)")
 )
 
 type message struct {
@@ -39,7 +41,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	updator := NewRSSFeed(*rssFeedURL, *guidsFile)
+	updator := NewRSSFeed(*rssFeedURL, *guidsFile, time.Duration(*timeout)*time.Second)
 	updates := updator.GetUpdateChan()
 
 	for update := range updates {

@@ -17,13 +17,15 @@ type rssFeed struct {
 	url        string
 	guids      []string
 	backupFile string
+	timeout    time.Duration
 }
 
-func NewRSSFeed(url, backupFile string) RSSFeed {
+func NewRSSFeed(url, backupFile string, timeout time.Duration) RSSFeed {
 	return &rssFeed{
 		url:        url,
 		backupFile: backupFile,
 		guids:      []string{},
+		timeout:    timeout,
 	}
 }
 
@@ -72,7 +74,7 @@ func (r *rssFeed) updator(ch chan gofeed.Item) {
 			}
 		}
 
-		time.Sleep(time.Second * 10)
+		time.Sleep(r.timeout)
 	}
 }
 
