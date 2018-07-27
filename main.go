@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"time"
 
@@ -13,7 +14,6 @@ var (
 	tgAPIKey   = flagenv.String("tg-api-key", "", "This is your telegram bot-api-token")
 	chatID     = flagenv.Int("chat-id", 0, "The chat to use.")
 	rssFeedURL = flagenv.String("rss-feed-url", "", "The RSS-feed to use for updates")
-	guidsFile  = flagenv.String("guids-file", "", "The path to the guids file")
 	timeout    = flagenv.Int("timeout", 10, "The timeout within a rss feed is gathered (in seconds)")
 )
 
@@ -35,13 +35,14 @@ func main() {
 	if *rssFeedURL == "" {
 		log.Fatal("you have to enter a RSS feed url")
 	}
+	fmt.Println(*tgAPIKey)
 
 	bot, err := tgbotapi.NewBotAPI(*tgAPIKey)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	updator := NewRSSFeed(*rssFeedURL, *guidsFile, time.Duration(*timeout)*time.Second)
+	updator := NewRSSFeed(*rssFeedURL, time.Duration(*timeout)*time.Second)
 	updates := updator.GetUpdateChan()
 
 	for update := range updates {

@@ -1,31 +1,27 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
-	"os"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 )
 
+//RSSFeed represents just an interface which provides a channel for feed updates
 type RSSFeed interface {
 	GetUpdateChan() chan gofeed.Item
 }
 
 type rssFeed struct {
-	url        string
-	guids      []string
-	backupFile string
-	timeout    time.Duration
+	url     string
+	timeout time.Duration
 }
 
-func NewRSSFeed(url, backupFile string, timeout time.Duration) RSSFeed {
+//NewRSSFeed creates a new atom RSS feed instance implementing the RSSFeed interface
+func NewRSSFeed(url string, timeout time.Duration) RSSFeed {
 	return &rssFeed{
-		url:        url,
-		backupFile: backupFile,
-		guids:      []string{},
-		timeout:    timeout,
+		url:     url,
+		timeout: timeout,
 	}
 }
 
@@ -40,50 +36,23 @@ func (r *rssFeed) GetUpdateChan() chan gofeed.Item {
 
 func (r *rssFeed) updator(ch chan gofeed.Item) {
 	feedParser := gofeed.NewParser()
-
-	backupFile, err := os.OpenFile(r.backupFile, os.O_RDONLY|os.O_CREATE, 0777)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if err := json.NewDecoder(backupFile).Decode(&r.guids); err != nil {
-		log.Println(err.Error())
-	}
-	backupFile.Close()
+	updatedTime := time.Now()
 
 	for {
 		feed, err := feedParser.ParseURL(r.url)
+
 		if err != nil {
 			log.Println(err.Error())
-		} else {
+		} else if feed.UpdatedParsed.Sub(updatedTime) > 0 {
 			for _, item := range feed.Items {
-				if !r.guidSent(item.GUID) {
+				if item.PublishedParsed.Sub(updatedTime) >= 0 {
 					log.Printf(`New entry: "%s"`, item.Title)
 					ch <- *item
-					r.guids = append(r.guids, item.GUID)
-					backupFile, err := os.OpenFile(r.backupFile, os.O_RDONLY|os.O_CREATE|os.O_TRUNC, 0777)
-					if err != nil {
-						log.Println(err.Error())
-					} else {
-						if err := json.NewEncoder(backupFile).Encode(&r.guids); err != nil {
-							log.Println(err.Error())
-						}
-					}
-					backupFile.Close()
 				}
 			}
+			updatedTime = *feed.UpdatedParsed
 		}
 
 		time.Sleep(r.timeout)
 	}
-}
-
-func (r *rssFeed) guidSent(guid string) bool {
-	for _, g := range r.guids {
-		if guid == g {
-			return true
-		}
-	}
-
-	return false
 }
