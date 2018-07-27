@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"time"
 
@@ -35,7 +34,6 @@ func main() {
 	if *rssFeedURL == "" {
 		log.Fatal("you have to enter a RSS feed url")
 	}
-	fmt.Println(*tgAPIKey)
 
 	bot, err := tgbotapi.NewBotAPI(*tgAPIKey)
 	if err != nil {
