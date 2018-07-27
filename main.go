@@ -25,7 +25,10 @@ type message struct {
 }
 
 func main() {
+	log.Println("starting rss feed puller")
+	log.Println("parsing arguments")
 	flagenv.Parse()
+	log.Println("arguments parsed")
 
 	if *chatID == 0 {
 		log.Fatal("you have to enter an chat id")
@@ -35,14 +38,18 @@ func main() {
 		log.Fatal("you have to enter a RSS feed url")
 	}
 
+	log.Println("creating new telegram bot")
 	bot, err := tgbotapi.NewBotAPI(*tgAPIKey)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	log.Println("telegram bot created")
 
+	log.Println("creating new rss feed puller")
 	updator := NewRSSFeed(*rssFeedURL, time.Duration(*timeout)*time.Second)
 	updates := updator.GetUpdateChan()
 
+	log.Println("rss feed puller created\nwaiting for new items")
 	for update := range updates {
 		var b bytes.Buffer
 
